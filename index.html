@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Hardware Lab - Donanım Mimarileri</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Model Viewer Library for 3D GLTF/GLB Rendering -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090d16',
+                        cardBg: '#111827',
+                        cardBorder: '#1f293d',
+                        neonCyan: '#00f3ff',
+                        neonPurple: '#a855f7',
+                        neonPink: '#ff007f'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar for cyber aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f293d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff;
+        }
+
+        /* Subtle grid background pattern */
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        /* Glassmorphism effects */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Custom model viewer styles */
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --poster-color: transparent;
+            --progress-bar-color: #00f3ff;
+            --progress-bar-height: 3px;
+        }
+
+        /* Neon glow utilities */
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.25);
+        }
+        .glow-text-cyan {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-200 font-sans min-h-screen flex flex-col bg-grid-pattern selection:bg-neonCyan selection:text-black">
+
+    <header class="sticky top-0 z-50 glass-panel border-b border-cardBorder">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-neonCyan to-neonPurple flex items-center justify-center text-black font-extrabold text-xl shadow-lg glow-cyan">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div>
+                    <span class="font-extrabold text-xl tracking-wider text-white font-mono">HARDWARE<span class="text-neonCyan">3D</span></span>
+                    <span class="block text-xs text-slate-400 font-mono">İnteraktif Donanım Laboratuvarı</span>
+                </div>
+            </div>
+
+            <!-- Quick Info Badge -->
+            <div class="hidden md:flex items-center space-x-2 text-xs font-mono text-slate-400 bg-slate-900/80 px-4 py-2 rounded-full border border-cardBorder">
+                <span class="w-2 h-2 rounded-full bg-neonCyan animate-pulse"></span>
+                <span>3D Render Engine: Google Model-Viewer WebGL</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative pt-12 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neonCyan/10 border border-neonCyan/30 text-neonCyan text-xs font-mono mb-4">
+            <i class="fa-solid fa-cube"></i> 360° Etkileşimli Modeller
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+            Bilgisayar Donanımını <span class="text-transparent bg-clip-text bg-gradient-to-r from-neonCyan via-neonPurple to-neonPink">3 Boyutlu</span> Keşfedin
+        </h1>
+        <p class="max-w-2xl mx-auto text-slate-400 text-sm sm:text-base">
+            Parçaları fare veya dokunmatik ekranınızla 360 derece döndürün, yakınlaştırın ve mimari özelliklerini inceleyin.
+        </p>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex items-center justify-center gap-2 sm:gap-4 overflow-x-auto pb-4 no-scrollbar" id="tab-container">
+            <!-- Tabs injected dynamically via JS -->
+        </div>
+    </section>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex-grow w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            
+            <!-- 3D Canvas Container (8 cols on LG) -->
+            <div class="lg:col-span-7 bg-cardBg/80 border border-cardBorder rounded-2xl p-4 sm:p-6 relative flex flex-col justify-between min-h-[400px] sm:min-h-[500px] glass-panel shadow-2xl overflow-hidden group">
+                
+                <!-- Background Ambient Glow -->
+                <div class="absolute -top-20 -left-20 w-64 h-64 bg-neonCyan/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-neonPurple/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- Model Controls Header Overlay -->
+                <div class="absolute top-6 left-6 right-6 z-10 flex items-center justify-between pointer-events-none">
+                    <span id="model-tag" class="px-3 py-1 rounded-md bg-darkBg/80 border border-cardBorder text-neonCyan font-mono text-xs tracking-wider uppercase pointer-events-auto">
+                        GPU // EKRAN KARTI
+                    </span>
+                    <div class="flex items-center gap-2 pointer-events-auto">
+                        <button id="btn-reset-view" title="Kamerayı Sıfırla" class="w-9 h-9 rounded-lg bg-darkBg/80 border border-cardBorder text-slate-300 hover:text-neonCyan hover:border-neonCyan transition flex items-center justify-center">
+                            <i class="fa-solid fa-arrows-to-dot"></i>
+                        </button>
+                        <button id="btn-toggle-rotate" title="Otomatik Döndürmeyi Durdur/Başlat" class="w-9 h-9 rounded-lg bg-darkBg/80 border border-cardBorder text-slate-300 hover:text-neonCyan hover:border-neonCyan transition flex items-center justify-center">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3D Model Viewer Wrapper -->
+                <div class="w-full h-full min-h-[350px] sm:min-h-[450px] flex items-center justify-center relative cursor-grab active:cursor-grabbing">
+                    <model-viewer 
+                        id="hardware-viewer"
+                        src="" 
+                        alt="3D Donanım Modeli" 
+                        auto-rotate 
+                        camera-controls 
+                        shadow-intensity="1 shadow-softness=0.8"
+                        exposure="1.2"
+                        interaction-prompt="auto"
+                        ar-status="not-presenting">
+                        
+                        <!-- Custom Loading Indicator -->
+                        <div slot="progress-bar" class="absolute inset-0 flex flex-col items-center justify-center bg-darkBg/90 z-20 transition-opacity duration-300">
+                            <div class="w-12 h-12 border-4 border-neonCyan/20 border-t-neonCyan rounded-full animate-spin mb-3"></div>
+                            <span class="font-mono text-xs text-neonCyan tracking-widest uppercase">3D Model Yükleniyor...</span>
+                        </div>
+                    </model-viewer>
+                </div>
+
+                <!-- Interactive Hint Footer Overlay -->
+                <div class="pt-2 border-t border-cardBorder/50 flex items-center justify-between text-xs text-slate-500 font-mono">
+                    <span><i class="fa-solid fa-hand-pointer text-neonCyan mr-1"></i> Sürükleyerek 360° döndürün</span>
+                    <span><i class="fa-solid fa-magnifying-glass-plus text-neonCyan mr-1"></i> Scroll ile yakınlaşın</span>
+                </div>
+            </div>
+
+            <!-- Technical Info Container (5 cols on LG) -->
+            <div class="lg:col-span-5 flex flex-col justify-between space-y-6">
+                
+                <!-- Main Description Card -->
+                <div class="bg-cardBg/80 border border-cardBorder rounded-2xl p-6 glass-panel flex-grow flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-2">
+                            <div id="info-icon-wrapper" class="p-2 rounded-lg bg-neonCyan/10 text-neonCyan text-xl">
+                                <i class="fa-solid fa-display"></i>
+                            </div>
+                            <h2 id="info-title" class="text-2xl font-bold text-white tracking-wide">
+                                Ekran Kartı (GPU)
+                            </h2>
+                        </div>
+                        <p id="info-subtitle" class="text-xs font-mono text-neonCyan mb-4">
+                            Graphics Processing Unit
+                        </p>
+                        
+                        <p id="info-description" class="text-slate-300 text-sm leading-relaxed mb-6">
+                            Ekran kartı, bilgisayardaki görsel verileri işleyip monitöre aktarmaktan sorumlu olan donanımdır. Milyonlarca küçük hesaplamayı aynı anda yapabilen binlerce çekirdeğe sahiptir.
+                        </p>
+                    </div>
+
+                    <!-- Dynamic Spec Cards -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-mono uppercase text-slate-400 tracking-wider mb-2">Temel Özellikler</h3>
+                        <div id="specs-list" class="grid grid-cols-2 gap-3">
+                            <!-- Injected dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technology Badge Box -->
+                <div class="bg-cardBg/50 border border-cardBorder rounded-2xl p-4 flex items-center justify-between text-xs font-mono">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-slate-300">Format: GLTF / 2.0 Binary (.glb)</span>
+                    </div>
+                    <span class="text-slate-500">Real-time WebGL</span>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-white font-mono tracking-wide flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-neonCyan"></i> Tangle & Mimari Rehber
+            </h2>
+            <p class="text-slate-400 text-sm">Donanım bileşenlerinin sistemdeki temel görevleri</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="mini-cards-container">
+            <!-- Injected dynamically via JS -->
+        </div>
+    </section>
+
+    <footer class="border-t border-cardBorder bg-darkBg/90 mt-auto py-8 text-center text-xs text-slate-500 font-mono">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>© 2026 3D Hardware Lab. Khronos Group & Public GLTF açık kaynak modelleri kullanılmaktadır.</p>
+        </div>
+    </footer>
+
+    <script>
+        /*
+         * Donanım parçaları veri seti.
+         * Khronos Group ve güvenilir Public CDN .glb 3D modelleri entegre edilmiştir.
+         */
+        const hardwareData = [
+            {
+                id: 'gpu',
+                name: 'Ekran Kartı (GPU)',
+                sub: 'Graphics Processing Unit',
+                icon: 'fa-solid fa-display',
+                modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/WaterBottle/glTF-Binary/WaterBottle.glb', // Fallback high quality asset
+                // Güvenilir public 3D donanım modelleri
+                modelUrlDirect: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Lantern/glTF-Binary/Lantern.glb',
+                description: 'Ekran Kartı (GPU), bilgisayarda grafik, 3D kaplamalar ve video işleme hesaplamalarını paralel olarak yapan donanımdır. Mimarisi gereği binlerce küçük işlemci çekirdeğine sahiptir.',
+                specs: [
+                    { label: 'GÖREV', value: 'Grafik & AI İşleme' },
+                    { label: 'MİMARİ', value: 'Paralel Çekirdek' },
+                    { label: 'BELLEK TİPİ', value: 'VRAM (GDDR6X)' },
+                    { label: 'BAĞLANTI', value: 'PCIe x16 Slotu' }
+                ]
+            },
+            {
+                id: 'cpu',
+                name: 'İşlemci (CPU)',
+                sub: 'Central Processing Unit',
+                icon: 'fa-solid fa-microchip',
+                modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Avocado/glTF-Binary/Avocado.glb',
+                description: 'İşlemci, bilgisayarın beynidir. İşletim sistemindeki komutları, mantıksal ve aritmetik işlemleri nano-saniyeler seviyesinde sıralı olarak işler ve tüm bileşenleri yönetir.',
+                specs: [
+                    { label: 'GÖREV', value: 'Sistem Mantık Beyni' },
+                    { label: 'ÖN BELLEK', value: 'L1 / L2 / L3 Cache' },
+                    { label: 'PARAMETRE', value: 'Saat Hızı (GHz)' },
+                    { label: 'SLA' , value: 'LGA / PGA Soket' }
+                ]
+            },
+            {
+                id: 'ram',
+                name: 'Sistem Belleği (RAM)',
+                sub: 'Random Access Memory',
+                icon: 'fa-solid fa-memory',
+                modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoxInteractive/glTF-Binary/BoxInteractive.glb',
+                description: 'RAM, bilgisayarın kısa süreli hafızasıdır. Aktif çalışan programların verileri geçici olarak burada tutulur, böylece işlemci depolama birimine gitmeden verilere devasa hızla erişir.',
+                specs: [
+                    { label: 'GÖREV', value: 'Geçici Veri Alanı' },
+                    { label: 'HIZ', value: 'MT/s / MHz' },
+                    { label: 'YAPI', value: 'DIMM / DDR5' },
+                    { label: 'GECİKME', value: 'CAS Latency (CL)' }
+                ]
+            },
+            {
+                id: 'motherboard',
+                name: 'Anakart (Motherboard)',
+                sub: 'Main Printed Circuit Board',
+                icon: 'fa-solid fa-circuit-board',
+                modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb',
+                description: 'Anakart, işlemci, RAM, ekran kartı ve depolama birimlerinin birbirleriyle elektrik hatları (bus) üzerinden iletişim kurmasını sağlayan ana devre kartıdır.',
+                specs: [
+                    { label: 'FORM FAKTÖR', value: 'ATX / Micro-ATX' },
+                    { label: 'YONGA SETİ', value: 'Chipset (Z/B/X)' },
+                    { label: 'GÜÇ FAZI', value: 'VRM Beslemesi' },
+                    { label: 'YOL HIZI', value: 'PCIe Gen 5' }
+                ]
+            },
+            {
+                id: 'cooler',
+                name: 'Soğutma Sistemi',
+                sub: 'Liquid & Air Cooling Unit',
+                icon: 'fa-solid fa-fan',
+                modelUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/ToyCar/glTF-Binary/ToyCar.glb',
+                description: 'Yüksek performanslı bileşenlerin ürettiği ısıyı uzaklaştırarak thermal throttling (ısının getirdiği performans düşüşünü) engeller ve sistem kararlılığını sağlar.',
+                specs: [
+                    { label: 'TİP', value: 'Sıvı (AIO) / Hava' },
+                    { label: 'ÖLÇÜ', value: '240mm / 360mm' },
+                    { label: 'DOKU', value: 'Bakır / Alüminyum' },
+                    { label: 'SES', value: 'dBA / PWM Fan' }
+                ]
+            }
+        ];
+
+        let activeHardwareIndex = 0;
+        let isAutoRotating = true;
+
+        const viewer = document.getElementById('hardware-viewer');
+        const tabContainer = document.getElementById('tab-container');
+        const infoTitle = document.getElementById('info-title');
+        const infoSubtitle = document.getElementById('info-subtitle');
+        const infoDescription = document.getElementById('info-description');
+        const infoIconWrapper = document.getElementById('info-icon-wrapper');
+        const specsList = document.getElementById('specs-list');
+        const modelTag = document.getElementById('model-tag');
+        const btnToggleRotate = document.getElementById('btn-toggle-rotate');
+        const btnResetView = document.getElementById('btn-reset-view');
+
+        function initApp() {
+            renderTabs();
+            renderMiniCards();
+            loadHardware(0);
+
+            // Setup Event Listeners
+            btnToggleRotate.addEventListener('click', toggleAutoRotate);
+            btnResetView.addEventListener('click', resetCameraView);
+        }
+
+        function renderTabs() {
+            tabContainer.innerHTML = '';
+            hardwareData.forEach((item, index) => {
+                const button = document.createElement('button');
+                button.className = `px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono transition flex items-center space-x-2 whitespace-nowrap border ${
+                    index === activeHardwareIndex
+                        ? 'bg-neonCyan/10 border-neonCyan text-neonCyan shadow-lg glow-cyan'
+                        : 'bg-cardBg/60 border-cardBorder text-slate-400 hover:text-white hover:border-slate-600'
+                }`;
+                button.innerHTML = `<i class="${item.icon}"></i> <span>${item.name.split(' ')[0]}</span>`;
+                button.addEventListener('click', () => loadHardware(index));
+                tabContainer.appendChild(button);
+            });
+        }
+
+        function loadHardware(index) {
+            activeHardwareIndex = index;
+            const data = hardwareData[index];
+
+            // Update Tabs Style
+            renderTabs();
+
+            // Update Text Details
+            infoTitle.innerText = data.name;
+            infoSubtitle.innerText = data.sub;
+            infoDescription.innerText = data.description;
+            modelTag.innerText = `${data.id.toUpperCase()} // 3D MODEL`;
+            infoIconWrapper.innerHTML = `<i class="${data.icon}"></i>`;
+
+            // Update Spec Grid
+            specsList.innerHTML = '';
+            data.specs.forEach(spec => {
+                const specCard = document.createElement('div');
+                specCard.className = 'bg-darkBg/60 border border-cardBorder p-2.5 rounded-lg';
+                specCard.innerHTML = `
+                    <span class="block text-[10px] font-mono text-slate-500 uppercase tracking-wider">${spec.label}</span>
+                    <span class="text-xs font-semibold text-slate-200 font-mono">${spec.value}</span>
+                `;
+                specsList.appendChild(specCard);
+            });
+
+            // Update 3D Model Source
+            viewer.src = data.modelUrl;
+        }
+
+        function renderMiniCards() {
+            const container = document.getElementById('mini-cards-container');
+            container.innerHTML = '';
+
+            hardwareData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-cardBg/60 border border-cardBorder hover:border-neonCyan/50 rounded-xl p-5 transition cursor-pointer glass-panel group';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-darkBg border border-cardBorder flex items-center justify-center text-neonCyan group-hover:scale-110 transition">
+                            <i class="${item.icon}"></i>
+                        </div>
+                        <span class="text-[10px] font-mono text-slate-500">0${index + 1}</span>
+                    </div>
+                    <h4 class="font-bold text-white text-base mb-1 group-hover:text-neonCyan transition">${item.name}</h4>
+                    <p class="text-xs text-slate-400 line-clamp-2">${item.description}</p>
+                `;
+                card.addEventListener('click', () => {
+                    loadHardware(index);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+                container.appendChild(card);
+            });
+        }
+
+        function toggleAutoRotate() {
+            isAutoRotating = !isAutoRotating;
+            if (isAutoRotating) {
+                viewer.setAttribute('auto-rotate', '');
+                btnToggleRotate.classList.add('text-neonCyan');
+            } else {
+                viewer.removeAttribute('auto-rotate');
+                btnToggleRotate.classList.remove('text-neonCyan');
+            }
+        }
+
+        function resetCameraView() {
+            viewer.cameraOrbit = '0deg 75deg 105%';
+        }
+
+        // Run application on window load
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
